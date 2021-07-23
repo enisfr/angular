@@ -221,5 +221,21 @@ describe('Form Builder', () => {
       });
     });
   });
+
+  it('should support nested typed groups', () => {
+    const g = b.group(
+        {
+          'outer': b.group(
+              {'inner': b.control(42)},
+              )
+        },
+    );
+
+    g.value;
+    g.value.outer;
+
+    const h = b.group({'only': b.control(42)});
+    h.value;
+  });
 });
 })();

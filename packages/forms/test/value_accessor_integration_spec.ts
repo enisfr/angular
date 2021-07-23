@@ -131,7 +131,8 @@ import {dispatchEvent} from '@angular/platform-browser/testing/src/browser_util'
 
       it('when value is cleared in the UI', () => {
         const fixture = initTest(FormControlNumberInput);
-        const control = new FormControl(10, Validators.required);
+        // TODO: `number` at init time vs `null` later on via `setValue`. Adding `<any>` for now.
+        const control = new FormControl<any>(10, Validators.required);
         fixture.componentInstance.control = control;
         fixture.detectChanges();
 
@@ -168,7 +169,8 @@ import {dispatchEvent} from '@angular/platform-browser/testing/src/browser_util'
 
       it('when value is cleared programmatically', () => {
         const fixture = initTest(FormControlNumberInput);
-        const control = new FormControl(10);
+        // TODO: `number` at init time vs `null` later on via `setValue`. Adding `<any>` for now.
+        const control = new FormControl<any>(10);
         fixture.componentInstance.control = control;
         fixture.detectChanges();
 
@@ -953,7 +955,8 @@ import {dispatchEvent} from '@angular/platform-browser/testing/src/browser_util'
 
         it('when value is cleared in the UI', () => {
           const fixture = initTest(FormControlNumberInput);
-          const control = new FormControl(10, Validators.required);
+          // TODO: `number` at init time vs `null` later on via `setValue`. Adding `<any>` for now.
+          const control = new FormControl<any>(10, Validators.required);
           fixture.componentInstance.control = control;
           fixture.detectChanges();
 
@@ -973,7 +976,8 @@ import {dispatchEvent} from '@angular/platform-browser/testing/src/browser_util'
 
         it('when value is cleared programmatically', () => {
           const fixture = initTest(FormControlNumberInput);
-          const control = new FormControl(10);
+          // TODO: `number` at init time vs `null` later on via `setValue`. Adding `<any>` for now.
+          const control = new FormControl<any>(10);
           fixture.componentInstance.control = control;
           fixture.detectChanges();
 

@@ -261,7 +261,10 @@ const ValueAccessorB = createControlValueAccessor('[cva-b]');
 
       it('should strip named controls that are not found', () => {
         const fixture = initTest(NestedFormGroupNameComp, LoginIsEmptyValidator);
-        const form = new FormGroup({
+        // TODO: in this test we have {signin: ...} as a shape of T, but we are trying to add more
+        // controls later (via `addControl` call). Figure out if this is too restrictive (adding
+        // `<any>` for now).
+        const form = new FormGroup<any>({
           'signin': new FormGroup({'login': new FormControl(''), 'password': new FormControl('')})
         });
         fixture.componentInstance.form = form;
@@ -1423,7 +1426,10 @@ const ValueAccessorB = createControlValueAccessor('[cva-b]');
 
         it('should reset properly', () => {
           const fixture = initTest(FormControlComp);
-          const control = new FormControl('', {validators: Validators.required, updateOn: 'blur'});
+          // TODO: init with a string, but calling `reset` with no value + asserting that the value
+          // is `null` later. Adding `<any>` for now.
+          const control =
+              new FormControl<any>('', {validators: Validators.required, updateOn: 'blur'});
           fixture.componentInstance.control = control;
           fixture.detectChanges();
 
@@ -1458,7 +1464,10 @@ const ValueAccessorB = createControlValueAccessor('[cva-b]');
           class App implements OnDestroy {
             private _subscription: Subscription;
 
-            form = new FormGroup({
+            // TODO: the type of the form.name is inferred as `string`, but later on we reset (thus
+            // setting to `null`). Figure out how reset can work with nested structures like the one
+            // in this test.
+            form = new FormGroup<any>({
               name: new FormControl('Frodo'),
               surname: new FormControl('Baggins'),
             });
@@ -1814,7 +1823,9 @@ const ValueAccessorB = createControlValueAccessor('[cva-b]');
 
         it('should reset properly', () => {
           const fixture = initTest(FormGroupComp);
-          const formGroup = new FormGroup(
+          // TODO: formGroup.login is initialized as a string, but the `reset()` sets the value as
+          // `null`. Check how `reset` can be more smart about this situation.
+          const formGroup = new FormGroup<any>(
               {login: new FormControl('', {validators: Validators.required, updateOn: 'submit'})});
           fixture.componentInstance.form = formGroup;
           fixture.detectChanges();

@@ -63,6 +63,8 @@ describe('FormArray', () => {
 
       a.insert(1, c2);
 
+      const controls = a.controls;
+
       expect(a.controls).toEqual([c1, c2, c3]);
     });
 
@@ -177,7 +179,8 @@ describe('FormArray', () => {
     let a: FormArray;
 
     it('should work with nested form groups/arrays', () => {
-      a = new FormArray([
+      // TODO: Why can't this be inferred?
+      a = new FormArray<any>([
         new FormGroup({'c2': new FormControl('v2'), 'c3': new FormControl('v3')}),
         new FormArray([new FormControl('v4'), new FormControl('v5')])
       ]);
@@ -730,7 +733,7 @@ describe('FormArray', () => {
       const simpleValidator = (c: FormArray) =>
           c.controls[0].value != 'correct' ? {'broken': true} : null;
 
-      const c = new FormControl(null);
+      const c = new FormControl<any>(null);
       const g = new FormArray([c], simpleValidator as ValidatorFn);
 
       c.setValue('correct');

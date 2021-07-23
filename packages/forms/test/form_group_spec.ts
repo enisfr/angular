@@ -132,7 +132,10 @@ describe('FormGroup', () => {
     });
 
     it('should update value and validity when control is added', () => {
-      const g = new FormGroup({'one': new FormControl('1')});
+      // TODO: in this test we have {one: ...} as a shape of T, but we are trying to add more
+      // controls later (via `addControl` call). Figure out if this is too restrictive (adding
+      // `<any>` for now).
+      const g = new FormGroup<any>({'one': new FormControl('1')});
       expect(g.value).toEqual({'one': '1'});
       expect(g.valid).toBe(true);
 
@@ -156,7 +159,10 @@ describe('FormGroup', () => {
 
     it('should not emit events when `FormGroup.addControl` is called with `emitEvent: false`',
        () => {
-         const g = new FormGroup({'one': new FormControl('1')});
+         // TODO: in this test we have {one: ...} as a shape of T, but we are trying to add more
+         // controls later (via `addControl` call). Figure out if this is too restrictive (adding
+         // `<any>` for now).
+         const g = new FormGroup<any>({'one': new FormControl('1')});
          expect(g.value).toEqual({'one': '1'});
 
          g.valueChanges.subscribe(() => logger.push('value change'));
@@ -939,7 +945,9 @@ describe('FormGroup', () => {
     }
 
     it('should run a single validator when the value changes', () => {
-      const c = new FormControl(null);
+      // TODO: setting `null` at init and trying to set value with the `string` type later on.
+      // Adding `<any>` for now.
+      const c = new FormControl<any>(null);
       const g = new FormGroup({'one': c}, simpleValidator);
 
       c.setValue('correct');
@@ -1764,7 +1772,10 @@ describe('FormGroup', () => {
       });
 
       it('should re-populate group errors when enabled from a child', () => {
-        const g = new FormGroup({'one': new FormControl()}, () => ({'expected': true}));
+        // TODO: in this test we have {one: ...} as a shape of T, but we are trying to add more
+        // controls later (via `addControl` call). Figure out if this is too restrictive (adding
+        // `<any>` for now).
+        const g = new FormGroup<any>({'one': new FormControl()}, () => ({'expected': true}));
         g.disable();
         expect(g.errors).toEqual(null);
 
@@ -1786,7 +1797,11 @@ describe('FormGroup', () => {
          }));
 
       it('should re-populate async group errors when enabled from a child', fakeAsync(() => {
-           const g = new FormGroup({'one': new FormControl()}, null!, asyncValidator('expected'));
+           // TODO: in this test we have {one: ...} as a shape of T, but we are trying to add more
+           // controls later (via `addControl` call). Figure out if this is too restrictive (adding
+           // `<any>` for now).
+           const g =
+               new FormGroup<any>({'one': new FormControl()}, null!, asyncValidator('expected'));
            tick();
            expect(g.errors).toEqual({'async': true});
 

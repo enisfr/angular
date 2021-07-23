@@ -10,7 +10,7 @@ import {Injectable} from '@angular/core';
 
 import {AsyncValidatorFn, ValidatorFn} from './directives/validators';
 import {ReactiveFormsModule} from './form_providers';
-import {AbstractControl, AbstractControlOptions, FormArray, FormControl, FormGroup, FormHooks} from './model';
+import {AbstractControl, AbstractControlOptions, ElementOf, FormArray, FormControl, FormGroup, FormHooks, FormState} from './model';
 
 function isAbstractControlOptions(options: AbstractControlOptions|
                                   {[key: string]: any}): options is AbstractControlOptions {
@@ -18,6 +18,13 @@ function isAbstractControlOptions(options: AbstractControlOptions|
       (<AbstractControlOptions>options).validators !== undefined ||
       (<AbstractControlOptions>options).updateOn !== undefined;
 }
+
+function isBuiltinControl(c: any): c is AbstractControl {
+  return c instanceof FormControl || c instanceof FormGroup || c instanceof FormArray;
+}
+
+// TODO: add to public API
+export type ControlConfig<T = any> = T|FormState<T>|AbstractControl<T>|[AbstractControl<T>, ValidatorFn?, AsyncValidatorFn?];
 
 /**
  * @description
@@ -47,10 +54,10 @@ export class FormBuilder {
    * * `updateOn`: The event upon which the control should be updated (options: 'change' | 'blur' |
    * submit')
    */
-  group(
-      controlsConfig: {[key: string]: any},
+  group<T = any>(
+      controlsConfig: {[K in keyof T]: ControlConfig<T[K]>},
       options?: AbstractControlOptions|null,
-      ): FormGroup;
+      ): FormGroup<T>;
   /**
    * @description
    * Construct a new `FormGroup` instance.
@@ -74,13 +81,14 @@ export class FormBuilder {
    * Note: the legacy format is deprecated and might be removed in one of the next major versions
    * of Angular.
    */
-  group(
-      controlsConfig: {[key: string]: any},
+  // T = {control1: string, control2: number, group1: {control1: string}}
+  group<T = any>(
+      controlsConfig: {[K in keyof T]: ControlConfig<T[K]>},
       options: {[key: string]: any},
-      ): FormGroup;
-  group(
-      controlsConfig: {[key: string]: any},
-      options: AbstractControlOptions|{[key: string]: any}|null = null): FormGroup {
+      ): FormGroup<T>;
+  group<T = any>(
+      controlsConfig: {[K in keyof T]: ControlConfig<T[K]>},
+      options: AbstractControlOptions|{[key: string]: any}|null = null): FormGroup<T> {
     const controls = this._reduceControls(controlsConfig);
 
     let validators: ValidatorFn|ValidatorFn[]|null = null;
@@ -126,10 +134,11 @@ export class FormBuilder {
    * <code-example path="forms/ts/formBuilder/form_builder_example.ts" region="disabled-control">
    * </code-example>
    */
-  control(
-      formState: any, validatorOrOpts?: ValidatorFn|ValidatorFn[]|AbstractControlOptions|null,
-      asyncValidator?: AsyncValidatorFn|AsyncValidatorFn[]|null): FormControl {
-    return new FormControl(formState, validatorOrOpts, asyncValidator);
+  control<T>(
+      formState: T|FormState<T>,
+      validatorOrOpts?: ValidatorFn|ValidatorFn[]|AbstractControlOptions|null,
+      asyncValidator?: AsyncValidatorFn|AsyncValidatorFn[]|null): FormControl<T> {
+    return new FormControl<T>(formState, validatorOrOpts, asyncValidator);
   }
 
   /**
@@ -146,35 +155,35 @@ export class FormBuilder {
    * @param asyncValidator A single async validator or array of async validator
    * functions.
    */
-  array(
-      controlsConfig: any[],
+  array<T extends any[] = any>(
+      controlsConfig: Array<ControlConfig<ElementOf<T>>>,
       validatorOrOpts?: ValidatorFn|ValidatorFn[]|AbstractControlOptions|null,
-      asyncValidator?: AsyncValidatorFn|AsyncValidatorFn[]|null): FormArray {
+      asyncValidator?: AsyncValidatorFn|AsyncValidatorFn[]|null): FormArray<T> {
     const controls = controlsConfig.map(c => this._createControl(c));
-    return new FormArray(controls, validatorOrOpts, asyncValidator);
+    return new FormArray<T>(controls, validatorOrOpts, asyncValidator);
   }
 
   /** @internal */
-  _reduceControls(controlsConfig: {[k: string]: any}): {[key: string]: AbstractControl} {
-    const controls: {[key: string]: AbstractControl} = {};
-    Object.keys(controlsConfig).forEach(controlName => {
-      controls[controlName] = this._createControl(controlsConfig[controlName]);
+  _reduceControls<T = any>(controlsConfig: {[K in keyof T]: ControlConfig<T[K]>}):
+      {[K in keyof T]: AbstractControl<T[K]>} {
+    const controls: {[K in keyof T]: AbstractControl<T[K]>} = {} as
+        {[K in keyof T]: AbstractControl<T[K]>};
+    (Object.keys(controlsConfig) as Array<keyof T>).forEach(controlName => {
+      controls[controlName] = this._createControl<T[keyof T]>(controlsConfig[controlName]);
     });
     return controls;
   }
 
   /** @internal */
-  _createControl(controlConfig: any): AbstractControl {
-    if (controlConfig instanceof FormControl || controlConfig instanceof FormGroup ||
-        controlConfig instanceof FormArray) {
+  _createControl<T = any>(controlConfig: ControlConfig<T>): AbstractControl<T> {
+    if (isBuiltinControl(controlConfig)) {
       return controlConfig;
-
     } else if (Array.isArray(controlConfig)) {
       const value = controlConfig[0];
-      const validator: ValidatorFn = controlConfig.length > 1 ? controlConfig[1] : null;
-      const asyncValidator: AsyncValidatorFn = controlConfig.length > 2 ? controlConfig[2] : null;
+      const validator: ValidatorFn|null = controlConfig.length > 1 ? controlConfig[1]! : null;
+      const asyncValidator: AsyncValidatorFn|null =
+          controlConfig.length > 2 ? controlConfig[2]! : null;
       return this.control(value, validator, asyncValidator);
-
     } else {
       return this.control(controlConfig);
     }
